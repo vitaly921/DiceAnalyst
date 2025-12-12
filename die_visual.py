@@ -39,35 +39,48 @@ ctk.set_default_color_theme("blue")
 
 app = ctk.CTk()
 app.title("Die_Test")
-app.geometry("400x200")
-app.resizable()
+app.geometry("500x400")
+app.resizable(False, False)
 
 # Заголовок
-title_label = ctk.CTkLabel(app, text="Настройка бросков кубиков", font=("Arial", 20))
-title_label.pack(pady=20)
+title_label = ctk.CTkLabel(app, text="Задание основных параметров броска", font=("Arial", 20))
+title_label.grid(row=0, column=0, columnspan=2, pady=10, padx=10, sticky="ew")
 
-dice_frame = ctk.CTkFrame(app, fg_color="transparent")
-dice_frame.pack(pady=5, padx=20, anchor="w", fill="x")
-dice_label = ctk.CTkLabel(dice_frame, text="Введите количество кубиков:")
-dice_label.pack(side="left", padx=10)
-dice_entry = ctk.CTkEntry(dice_frame, placeholder_text="Введите число от 1 до 10")
-dice_entry.pack(side="right", padx=10, fill="x", expand=True)
+input_frame = ctk.CTkFrame(app, fg_color="transparent")
+input_frame.grid(row=1, column=0, columnspan=2, pady=10, padx=10, sticky="ew")
 
-rolls_frame = ctk.CTkFrame(app, fg_color="transparent")
-rolls_frame.pack(pady=5, padx=20, anchor="w", fill="x")
-rolls_label = ctk.CTkLabel(rolls_frame, text="Количество бросков:")
-rolls_label.pack(side="left", padx=10)
-rolls_entry = ctk.CTkEntry(rolls_frame, placeholder_text="Введите число от 1 до 10000")
-rolls_entry.pack(side="right", padx=10, fill="x", expand=True)
+# Настройка внутри input_frame
+# Количество кубиков
+dice_label = ctk.CTkLabel(input_frame, text="Количество кубиков:")
+dice_label.grid(row=0, column=0, padx=7, pady=5)
+dice_entry = ctk.CTkEntry(input_frame, placeholder_text="1-10", width=60)
+dice_entry.grid(row=0, column=1, padx=7, pady=5, sticky="w")
 
+# Количество бросков
+rolls_label = ctk.CTkLabel(input_frame, text="Количество бросков:")
+rolls_label.grid(row=0, column=2, padx=7, pady=5)
+rolls_entry = ctk.CTkEntry(input_frame, placeholder_text="1-10000", width=60)
+rolls_entry.grid(row=0, column=3, padx=7, pady=5, sticky="w")
 
-compare_var = ctk.BooleanVar(value=False)
-compare_checkbox = ctk.CTkCheckBox(app, text="Сравнение с эталоном", variable=compare_var)
-compare_checkbox.pack(side="left", padx=30)
+# Режим расчёта
+calc_mode_label = ctk.CTkLabel(input_frame, text="Calculate mode:")
+calc_mode_label.grid(row=1, column=0, padx=7, pady=5, sticky="w")
 
-next_button = ctk.CTkButton(app, text="Далее", width=100)
-next_button.pack(side="bottom", pady=10)
+calc_mode_var = ctk.StringVar(value="sum")
+sum_radio = ctk.CTkRadioButton(input_frame, text="Summation", variable=calc_mode_var, value="sum")
+sum_radio.grid(row=1, column=1, padx=7, pady=5, sticky="w")
 
+product_radio = ctk.CTkRadioButton(input_frame, text="Composition", variable=calc_mode_var, value="product")
+product_radio.grid(row=1, column=2, padx=7, pady=5, sticky="w")
+
+# Тип диаграммы
+chart_type_list = ["bar_vertical", "bar_horizontal", "circle", "linear", "pie"]
+chart_type_label = ctk.CTkLabel(input_frame, text="Chart type:")
+chart_type_label.grid(row=2, column=0, padx=7, pady=10, sticky="w")
+
+chart_type_var = ctk.StringVar(value="bar_vertical")
+chart_type_combobox = ctk.CTkComboBox(input_frame, variable=chart_type_var, values=chart_type_list, width=110)
+chart_type_combobox.grid(row=2, column=1, padx=7, pady=10, sticky="w")
 app.mainloop()
 
 
