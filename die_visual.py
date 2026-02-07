@@ -5,13 +5,13 @@ from PIL import Image
 from die import Die
 from dice_widget import DieWidget
 
-
+# Создание определенного количества кубиков
 dice = [Die() for _ in range(4)]
-
+# Моделирование серии бросков с сохранением результатов в списке
 results = sim.roll_dice(dice, 3000)
-
+# Подсчет минимального и максимального результата одновременного броска кубиков
 min_result, max_result = sim.calc_result_range(dice)
-
+# Подсчет частоты выпадения каждого результата
 frequencies = sim.calc_frequency(results, min_result, max_result)
 
 # Моделирование серии бросков с сохранением результатов в списке
