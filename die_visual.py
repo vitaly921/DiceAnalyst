@@ -3,42 +3,33 @@ import customtkinter as ctk
 import simulation as sim
 from PIL import Image
 from die import Die
-from dice_widget import DieWidget
+from die_widget import DieWidget
+import charts as ch
+from dice_table import DiceTable
+
+# Задание количества кубиков и бросков
+count_dices = 3
+count_rolls = 3000
 
 # Создание определенного количества кубиков
-dice = [Die() for _ in range(4)]
+dice = [Die() for _ in range(count_dices)]
 # Моделирование серии бросков с сохранением результатов в списке
-results = sim.roll_dice(dice, 3000)
+results = sim.roll_dice(dice, count_rolls)
 # Подсчет минимального и максимального результата одновременного броска кубиков
 min_result, max_result = sim.calc_result_range(dice)
 # Подсчет частоты выпадения каждого результата
 frequencies = sim.calc_frequency(results, min_result, max_result)
 
-# Моделирование серии бросков с сохранением результатов в списке
-#results = []
-#
-#for roll_num in range(3000):
-#    result = die_1.roll() + die_2.roll() + die_3.roll()
-#    results.append(result)
-#
-## Анализ результатов
-#frequencies = []
-#max_result = die_1.num_sides + die_2.num_sides + die_3.num_sides
-#for value in range(3, max_result+1):
-#    frequency = results.count(value)
-#    frequencies.append(frequency)
-#
 
-# Визуализация результатов
-hist = pygal.Bar()
+# Задание заголовка диаграммы
+title = f"Results of rolling {count_dices} dice {count_rolls} times."
+# Задание меток оси X
+x_labels = [str(value) for value in range(count_dices, max_result+1)]
+# Создание диаграммы
+chart = ch.build_chart("bar_vertical", title, x_labels, frequencies)
+# Сохранение диаграммы в файл
+chart.render_to_file('die_visual.svg')
 
-hist.title = "Results of rolling three D6 dice 1000 times."
-hist.x_labels = [str(value) for value in range(4, max_result+1)]
-hist.x_title = "Result"
-hist.y_title = "Frequency of Result"
-
-hist.add("D6", frequencies)
-hist.render_to_file('die_visual.svg')
 
 # Задание стиля окна
 ctk.set_appearance_mode("dark")
@@ -56,35 +47,12 @@ for sides in range(2, 13):
     img = Image.open(f"images/d{sides}.png")
     dice_images[str(sides)] = ctk.CTkImage(img, size=(100, 100))
 
+
 # Список виджетов кубиков
-dice_widgets = []
-def build_dice_widgets(count):
-    """Создание виджетов кубиков в определенном порядке"""
-    # Задание допустимого количества кубиков в одном ряду
-    columns = 3
+dice_table = DiceTable(app, dice_images)
+dice_table.grid(row=5, column=0, columnspan=2, pady=10, padx=10, sticky="ew")
+dice_table.build(count_dices)
 
-    # Удаление существующих виджетов
-    for w in dice_scroll_frame.winfo_children():
-        w.destroy()
-    # Очистка списка виджетов
-    dice_widgets.clear()
-
-    # Каждую колонку с изображениями кубиков растягиваем по ширине
-    for col in range(columns):
-        dice_scroll_frame.grid_columnconfigure(col, weight=1)
-    # Создаем виджеты кубиков
-    for i in range(count):
-        # Создание экземпляра виджета кубика с количеством граней по умолчанию
-        die = DieWidget(dice_scroll_frame, dice_images)
-
-        # Задание расположения виджета с учетом допустимого количества кубиков в ряду
-        row = i // columns  # Задание номера ряда
-        col = i % columns   # Задание номера столбца
-
-        # Размещение виджета кубика в окне
-        die.grid(row=row, column=col, padx=5, pady=5, sticky="ew")
-        # Добавление виджета в список
-        dice_widgets.append(die)
 
 # Заголовок окна
 title_label = ctk.CTkLabel(app, text="Setting the basic parameters of a die roll", font=("Arial", 20))
@@ -153,14 +121,14 @@ sides_combobox.grid(row=0, column=3, padx=7, pady=5, sticky="e")
 
 # Блок с виджетами кубиков
 # Создание прозрачного контейнера
-dice_table_container = ctk.CTkFrame(app, border_width=1, fg_color="transparent")
-dice_table_container.grid(row=5, column=0, columnspan=2, pady=10, padx=10, sticky="ew")
-# Создание прокручиваемого фрейма внутри контейнера с виджетами кубиков
-dice_scroll_frame = ctk.CTkScrollableFrame(dice_table_container, width=460, height=200)
-dice_scroll_frame.grid(row=6, column=0, columnspan=2, sticky="ew")
+#dice_table_container = ctk.CTkFrame(app, border_width=1, fg_color="transparent")
+#dice_table_container.grid(row=5, column=0, columnspan=2, pady=10, padx=10, sticky="ew")
+## Создание прокручиваемого фрейма внутри контейнера с виджетами кубиков
+#dice_scroll_frame = ctk.CTkScrollableFrame(dice_table_container, width=460, height=200)
+#dice_scroll_frame.grid(row=6, column=0, columnspan=2, sticky="ew")
 
 # Вызов функции для построения виджетов кубиков
-build_dice_widgets(7)
+#build_dice_widgets(7)
 
 # Переменная для чек-бокса "Advanced settings" в режиме по умолчанию
 advanced_window = None
