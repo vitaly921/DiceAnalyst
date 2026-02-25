@@ -1,5 +1,6 @@
 import customtkinter as ctk
 from PIL import Image
+from advanced_window import AdvancedWindow
 
 from dice_table import DiceTable
 
@@ -7,49 +8,63 @@ class MainWindow(ctk.CTk):
     """Создание главного окна"""
     def __init__(self, count_dices=3, count_rolls=3000):
         super().__init__()
-
+        # Заголовок окна
         self.title("Die_Test")
+        # Размеры окна
         self.geometry("500x600")
+        # Запрет изменения размеров окна
         self.resizable(False, False)
-
+        # Сохранение количества кубиков и бросков
         self.count_dices = count_dices
         self.count_rolls = count_rolls
-
+        # Создание булевой переменной для перехода в расширенное окно настроек со значением False (окно не открыто)
         self.advanced_window = None
 
+        # Инициализация ключевых методов окна
         self._load_images()
         self._create_variables()
         self._build_ui()
 
     def _load_images(self):
-        """Загрузка изображений"""
+        """Загрузка всех изображений кубиков"""
         self.dice_images = {}
+        # Для изображений с гранями в заданном диапазоне
         for sides in range(2, 13):
+            # Открытие изображения с текущими гранями
             img = Image.open(f"images/d{sides}.png")
+            # Сохранение изображения с текущими гранями размером 100x100
             self.dice_images[str(sides)] = ctk.CTkImage(img, size=(100, 100))
 
     def _create_variables(self):
-        """Создание переменных"""
+        """Создание переменных для интерфейса главного окна"""
+        # Создание переменной режима расчёта (по умолчанию - суммирование)
         self.calc_mode_var = ctk.StringVar(value="sum")
+        # Создание переменной типа диаграммы (по умолчанию - вертикальная диаграмма)
         self.chart_type_var = ctk.StringVar(value="bar_vertical")
+        # Создание булевой переменной для перехода в расширенное окно настроек (по умолчанию - False)
         self.advanced_var = ctk.BooleanVar(value=False)
 
     def _build_ui(self):
-        """Построение интерфейса"""
+        """Построение интерфейса главного окна с помощью UI методов"""
+        # Метод для создания шапки главного окна
         self._build_header()
+        # Метод для создания фрейма ввода основных параметров броска
         self._build_input_frame()
+        # Метод для создания фрейма с выбором количества граней для всех кубиков
         self._build_faces_frame()
+        # Метод для создания таблицы изображений кубиков с выбором граней для каждого кубика
         self._build_dice_table()
+        # Метод для создания кнопок перехода в расширенное окно настроек или начала броска
         self._build_action_buttons()
 
     def _build_header(self):
-        """Построение шапки"""
+        """Создание шапки главного окна"""
         # Заголовок окна
         title_label = ctk.CTkLabel(self, text="Setting the basic parameters of a die roll", font=("Arial", 20))
         title_label.grid(row=0, column=0, columnspan=2, pady=10, padx=10, sticky="ew")
 
     def _build_input_frame(self):
-        """Построение фрейма ввода"""
+        """Создание фрейма для ввода основных параметров броска"""
         # Создание фрейма для ввода данных
         input_frame = ctk.CTkFrame(self, fg_color="transparent")
         input_frame.grid(row=1, column=0, columnspan=2, pady=10, padx=10, sticky="ew")
@@ -89,7 +104,7 @@ class MainWindow(ctk.CTk):
         chart_type_combobox.grid(row=2, column=1, padx=7, pady=10, sticky="w")
 
     def _build_faces_frame(self):
-        """Построение фрейма граней"""
+        """Создание фрейма с выбором граней для всех кубиков"""
         # Новый блок с выбором количества граней кубиков
         # Подзаголовок
         faces_header = ctk.CTkLabel(self, text="Select number of sides for each die", font=("Arial", 18))
@@ -104,6 +119,7 @@ class MainWindow(ctk.CTk):
         # Чек-бокс для задания одинаковых граней всем кубикам
         unform_check = ctk.CTkCheckBox(faces_frame, text="Uniform sides", variable=self.uniform_faces_var, width=250)
         unform_check.grid(row=0, column=0, padx=7, pady=5, sticky="w")
+
         # Задание переменной с количеством граней для всех кубиков по умолчанию
         self.sides_var = ctk.StringVar(value="6")
         # Выпадающий список для выбора количества граней всем кубикам
@@ -114,39 +130,47 @@ class MainWindow(ctk.CTk):
         sides_combobox.grid(row=0, column=3, padx=7, pady=5, sticky="e")
 
     def _build_dice_table(self):
-        """Построение таблицы кубиков"""
+        """Построение таблицы изображений кубиков"""
+        # Создание объекта включающего в себя контейнер со скроллингом и с таблицей изображений кубиков
         self.dice_table = DiceTable(self, self.dice_images)
+        # Задание расположения объекта-контейнера
         self.dice_table.grid(row=5, column=0, columnspan=2, pady=10, padx=10, sticky="ew")
+        # Построение таблицы изображений кубиков в объекте-контейнере
         self.dice_table.build(self.count_dices)
 
     def _build_action_buttons(self):
-        """Построение кнопок действий"""
-        # Чек-бокс для расширенных настроек
+        """Построение кнопок действий в конце окна"""
+        # Чек-бокс для выбора окна расширенных настроек
         self.advanced_check = ctk.CTkCheckBox(self, text="Advanced settings", variable=self.advanced_var,
                                          command=self.on_advanced_toggle)
+        # Задание расположения чек-бокса
         self.advanced_check.grid(row=7, column=0, pady=5, padx=18, sticky="w")
 
-        # Кнопка для анализа/расширенных настроек
+        # Кнопка для начала анализа/расширенных настроек (в зависимости от чек-бокса)
         self.action_button = ctk.CTkButton(self, text="Analyze", width=100, command=self.on_action_button)
+        # Задание расположения кнопки
         self.action_button.grid(row=8, column=0, columnspan=2, pady=10, padx=10)
 
     def on_advanced_toggle(self):
         """Обработчик чек-бокса расширенных настроек"""
+        # Если чек-бокс выбран, то кнопка меняет текст на "Next", иначе текст на кнопке - "Analyze"
         self.action_button.configure(text="Next" if self.advanced_var.get() else "Analyze")
 
     def on_action_button(self):
-        """Обработчик кнопки действия"""
-        # Если выбран чек-бокс "Advanced settings", то при нажатии на кнопку открывается окно расширенных настроек
+        """Обработчик кнопки действия в зависимости от чек-бокса"""
+        # Если чек-бокс выбран, то при нажатии на кнопку "Next" открывается окно расширенных настроек
         if self.advanced_var.get():
+            # Вызов функции открытия окна расширенных настроек
             self.open_advanced_window()
             # action_button.configure(state="disabled")
             # advanced_check.configure(state="disabled")
-        # Если не выбран чек-бокс, то при нажатии кнопки происходит анализ
+
+        # Если чек-бокс не отмечен, то при нажатии кнопки "Analyze" начинается анализ бросков
         else:
             print("Analyze button clicked")
 
     def open_advanced_window(self):
             """Открытие окна расширенных настроек"""
             if self.advanced_window is None:
-                pass
-                #self.advanced_window = AdvancedWindow(self)
+                #pass
+                self.advanced_window = AdvancedWindow(self)
