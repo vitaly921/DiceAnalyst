@@ -16,13 +16,18 @@ class DieWidget(ctk.CTkFrame):
         self.image_label = ctk.CTkLabel(self, image=dice_images[sides], text='')
         self.image_label.pack(pady=(8,4))
         # Добавление выпадающего списка для изменения количества граней
-        self.sides_box = ctk.CTkComboBox(self, values=[str(i) for i in range(2, 13)], variable=self.sides_var, width=70, command=self._on_sides_change)
+        self.sides_box = ctk.CTkComboBox(self, values=[str(i) for i in range(2, 13)], variable=self.sides_var,
+                                         width=70, state="disabled", command=self._on_sides_change)
         self.sides_box.pack(pady=(0,8))
 
-    def _on_sides_change(self, value):
+        self.sides_var.trace_add("write", self._on_sides_change)
+
+    def _on_sides_change(self, *args):
         """Обработчик изменения количества граней"""
+        value = self.sides_var.get()
+        img = self.dice_images.get(value, self.dice_images["6"])
         # Обновление изображения кубика с новым количеством граней
-        self.image_label.configure(image=self.dice_images[value])
+        self.image_label.configure(image=img)
 
     def get_sides(self):
         """Получение текущего количества граней"""

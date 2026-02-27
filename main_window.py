@@ -117,17 +117,18 @@ class MainWindow(ctk.CTk):
         # Переменная для чек-бокса "Uniform sides" со значением True по умолчанию
         self.uniform_faces_var = ctk.BooleanVar(value=True)
         # Чек-бокс для задания одинаковых граней всем кубикам
-        unform_check = ctk.CTkCheckBox(faces_frame, text="Uniform sides", variable=self.uniform_faces_var, width=250)
-        unform_check.grid(row=0, column=0, padx=7, pady=5, sticky="w")
+        uniform_check = ctk.CTkCheckBox(faces_frame, text="Uniform sides", variable=self.uniform_faces_var,
+                                       command=self._on_uniform_toggle, width=250)
+        uniform_check.grid(row=0, column=0, padx=7, pady=5, sticky="w")
 
         # Задание переменной с количеством граней для всех кубиков по умолчанию
         self.sides_var = ctk.StringVar(value="6")
         # Выпадающий список для выбора количества граней всем кубикам
-        sides_label = ctk.CTkLabel(faces_frame, text="Number of sides:", width=60)
-        sides_label.grid(row=0, column=2, padx=7, pady=5, sticky="w")
-        sides_combobox = ctk.CTkComboBox(faces_frame, variable=self.sides_var, values=[str(i) for i in range(2, 13)],
-                                         width=60)
-        sides_combobox.grid(row=0, column=3, padx=7, pady=5, sticky="e")
+        self.sides_label = ctk.CTkLabel(faces_frame, text="Number of sides:", width=60)
+        self.sides_label.grid(row=0, column=2, padx=7, pady=5, sticky="w")
+        self.sides_combobox = ctk.CTkComboBox(faces_frame, variable=self.sides_var, values=[str(i) for i in range(2, 13)],
+                                         width=60, state="normal", command=self._on_sides_change)
+        self.sides_combobox.grid(row=0, column=3, padx=7, pady=5, sticky="e")
 
     def _build_dice_table(self):
         """Построение таблицы изображений кубиков"""
@@ -169,8 +170,31 @@ class MainWindow(ctk.CTk):
         else:
             print("Analyze button clicked")
 
+    def _on_uniform_toggle(self):
+        """Обработчик чек-бокса "Uniform sides"""
+        is_uniform = self.uniform_faces_var.get()
+
+        self.sides_combobox.configure(state="normal" if is_uniform else "disabled")
+        self.sides_label.configure(state="normal" if is_uniform else "disabled")
+
+        for dice_widget in self.dice_table.dice_widgets:
+            dice_widget.sides_box.configure(state="disabled" if is_uniform else "normal")
+
+        if is_uniform:
+            self._on_sides_change(self.sides_var.get())
+
+    def _on_sides_change(self, value):
+        """Обработчик изменения количества граней кубиков"""
+        if not hasattr(self, "dice_table"):
+            return
+
+        new_sides = self.sides_var.get()
+
+        for dice_widget in self.dice_table.dice_widgets:
+            dice_widget.sides_var.set(new_sides)
+
+
     def open_advanced_window(self):
             """Открытие окна расширенных настроек"""
             if self.advanced_window is None:
-                #pass
                 self.advanced_window = AdvancedWindow(self)
