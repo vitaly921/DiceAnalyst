@@ -172,14 +172,17 @@ class MainWindow(ctk.CTk):
 
     def _on_uniform_toggle(self):
         """Обработчик чек-бокса "Uniform sides"""
+        # Сохранение состояния чек-бокса для изменения количества граней всех кубиков одновременно
         is_uniform = self.uniform_faces_var.get()
-
+        # Изменение состояния выпадающего списка (включено/выключено) в зависимости от состояния чек-бокса
         self.sides_combobox.configure(state="normal" if is_uniform else "disabled")
         self.sides_label.configure(state="normal" if is_uniform else "disabled")
 
+        # Изменение состояния выпадающего списка каждого кубика в зависимости от состояния чек-бокса
         for dice_widget in self.dice_table.dice_widgets:
+            # Если чек-бокс выбран, то выпадающий список каждого кубика выключен, иначе - включен
             dice_widget.sides_box.configure(state="disabled" if is_uniform else "normal")
-
+        # Если чек-бокс выбран, то вызывается функция изменения количества граней всех кубиков одновременно
         if is_uniform:
             self._on_sides_change(self.sides_var.get())
 
@@ -187,9 +190,9 @@ class MainWindow(ctk.CTk):
         """Обработчик изменения количества граней кубиков"""
         if not hasattr(self, "dice_table"):
             return
-
+        # Сохранение нового количества граней при выборе чек-бокса "Uniform sides"
         new_sides = self.sides_var.get()
-
+        # Изменение количества граней каждого кубика
         for dice_widget in self.dice_table.dice_widgets:
             dice_widget.sides_var.set(new_sides)
 

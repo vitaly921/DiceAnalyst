@@ -20,11 +20,14 @@ class DieWidget(ctk.CTkFrame):
                                          width=70, state="disabled", command=self._on_sides_change)
         self.sides_box.pack(pady=(0,8))
 
+        # Вызов обработчика при изменении количества граней чек-бокса Uniform Sides
         self.sides_var.trace_add("write", self._on_sides_change)
 
     def _on_sides_change(self, *args):
         """Обработчик изменения количества граней"""
+        # Получение нового количества граней
         value = self.sides_var.get()
+        # Получение изображения кубика с новым количеством граней (по умолчанию 6)
         img = self.dice_images.get(value, self.dice_images["6"])
         # Обновление изображения кубика с новым количеством граней
         self.image_label.configure(image=img)
