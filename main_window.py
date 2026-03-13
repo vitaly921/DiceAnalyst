@@ -31,7 +31,7 @@ class MainWindow(ctk.CTk):
         # Для изображений с гранями в заданном диапазоне
         for sides in range(2, 13):
             # Открытие изображения с текущими гранями
-            img = Image.open(f"images/d{sides}.png")
+            img = Image.open(f"images/dice/d{sides}.png")
             # Сохранение изображения с текущими гранями размером 100x100
             self.dice_images[str(sides)] = ctk.CTkImage(img, size=(100, 100))
 
@@ -200,4 +200,4 @@ class MainWindow(ctk.CTk):
     def open_advanced_window(self):
             """Открытие окна расширенных настроек"""
             if self.advanced_window is None:
-                self.advanced_window = AdvancedWindow(self)
+                self.advanced_window = AdvancedWindow(self, self.calc_mode_var)
