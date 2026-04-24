@@ -1,10 +1,13 @@
 import customtkinter as ctk
+from customtkinter import CTkLabel
+
 
 class AdvancedWindow(ctk.CTkToplevel):
     """Класс для расширенного окна настроек"""
     def __init__(self, parent, mode):
         """Инициализация окна"""
         super().__init__(parent)
+        self.main_chart_type = None
         self.parent = parent
         self.mode = mode
         self.title("Advanced settings")
@@ -39,6 +42,8 @@ class AdvancedWindow(ctk.CTkToplevel):
 
         self._build_statistics_frame()      # Создание фреймов для статистических характеристик
         self._build_probability_frame()     # Создание фрейма для вероятностных характеристик
+        self._build_chart_frame()           # Создание фрейма с выбором диаграмм
+
 
     def _build_statistics_frame(self):
         """Создание фрейма для статистических характеристик"""
@@ -120,6 +125,85 @@ class AdvancedWindow(ctk.CTkToplevel):
         # Создание поля для ввода конкретного числа
         self.compare_entry = ctk.CTkEntry(prob_frame, width=60, textvariable=self.compare_value_var)
         self.compare_entry.grid(row=2, column=1, padx=10, pady=(5,5), sticky="w")
+
+    def _build_chart_frame(self):
+        """Создание фрейма с диаграммами"""
+        chart_label = ctk.CTkLabel(self, text="Chart selection", font=("Arial", 12))
+        chart_label.grid(row=5, column=0, padx=10, pady=(5, 0), sticky='w')
+
+        chart_frame = ctk.CTkFrame(self, corner_radius=10)
+        chart_frame.grid(row=6, column=0, columnspan=2, padx=10, pady=0, sticky='ew')
+        chart_frame.grid_columnconfigure(1, weight=1)
+
+        self.chart_types = ["bar_vertical", "bar_horizontal", "circle", "linear", "CDF", "Boxplot", "Scatter",
+                                "Stacked", "Heatmap"]
+        self.current_chart_index = 0
+
+        self.chart_selected = {chart: False for chart in self.chart_types}
+
+        self.chart_title_label = CTkLabel(chart_frame, text="")
+        self.chart_title_label.grid(row=0, column=0, columnspan=3, pady=5)
+
+        prev_button = ctk.CTkButton(chart_frame, text="<",font=('Arial',32),width=60, height=120, command=self._prev_chart)
+        prev_button.grid(row=1, column=0, padx=5, pady=5, sticky="w")
+
+        next_button = ctk.CTkButton(chart_frame, text=">", font=('Arial',32), width=60, height=120, command=self._next_chart)
+        next_button.grid(row=1, column=2, padx=5, pady=5, sticky="w")
+
+        self.chart_preview = ctk.CTkLabel(chart_frame, text="Chart preview", width=200, height=120)
+        self.chart_preview.grid(row=1, column=1, padx=10, pady=5, sticky="w")
+
+        self.chart_selected_var = ctk.BooleanVar(value=False)
+        self.selected_checkbox = ctk.CTkCheckBox(chart_frame, text="Use this chart", variable=self.chart_selected_var)
+        self.selected_checkbox.grid(row=2, column=0, padx=10, pady=5, sticky="w")
+
+        self._update_chart_view()
+
+
+    def _update_chart_view(self):
+        """Обновление отображения текущей диаграммы"""
+        chart_name = self.chart_types[self.current_chart_index]
+        self.chart_selected_var.set(self.chart_selected[chart_name])
+        total =  len(self.chart_types)
+
+        self.chart_title_label.configure(text=f"{chart_name} ({self.current_chart_index + 1}/{total})")
+
+        self.chart_preview.configure(text=chart_name)
+
+        if chart_name == self.main_chart_type:
+            self.chart_selected_var.set(True)
+            self.selected_checkbox.configure(state='disabled')
+        else:
+            #self.chart_selected_var.set(False)
+            self.selected_checkbox.configure(state ='normal')
+
+
+
+
+    def _next_chart(self):
+        """Переключение к следующему типу диаграмм"""
+        if self.current_chart_index < len(self.chart_types) - 1:
+            current_chart = self.chart_types[self.current_chart_index]
+            self.chart_selected[current_chart] = self.chart_selected_var.get()
+            self.current_chart_index += 1
+            self._update_chart_view()
+
+    def _prev_chart(self):
+        """Переключение к предыдущей диаграмме"""
+        if self.current_chart_index > 0:
+            current_chart = self.chart_types[self.current_chart_index]
+            self.chart_selected[current_chart] = self.chart_selected_var.get()
+            self.current_chart_index -= 1
+            self._update_chart_view()
+
+
+    def set_main_chart(self, chart_type):
+        """ """
+        if chart_type in self.chart_types:
+            self.main_chart_type = chart_type
+            self.current_chart_index = self.chart_types.index(chart_type)
+            self._update_chart_view()
+            print(self.current_chart_index)
 
     def get_selected_stats(self):
         """Возвращает список выбранных статистических характеристик"""

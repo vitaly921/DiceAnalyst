@@ -94,7 +94,8 @@ class MainWindow(ctk.CTk):
 
         # Тип диаграммы
         # Список типов диаграмм
-        self.chart_type_list = ["bar_vertical", "bar_horizontal", "circle", "linear", "pie"]
+        self.chart_type_list = ["bar_vertical", "bar_horizontal", "circle", "linear", "CDF", "Boxplot", "Scatter",
+                                "Stacked", "Heatmap"]
         chart_type_label = ctk.CTkLabel(input_frame, text="Chart type:")
         chart_type_label.grid(row=2, column=0, padx=7, pady=10, sticky="w")
         # Тип диаграммы по умолчанию
@@ -201,3 +202,4 @@ class MainWindow(ctk.CTk):
             """Открытие окна расширенных настроек"""
             if self.advanced_window is None:
                 self.advanced_window = AdvancedWindow(self, self.calc_mode_var)
+                self.advanced_window.set_main_chart(self.chart_type_var.get())
