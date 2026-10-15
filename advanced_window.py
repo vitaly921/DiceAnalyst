@@ -86,6 +86,10 @@ class AdvancedWindow(ctk.CTkToplevel):
             column = i % columns
             checkbox.grid(row=row, column=column, padx=8, pady=(5, 0), sticky="w")
 
+    def get_selected_stats(self):
+        """Возвращает список выбранных статистических характеристик"""
+        return [name for name, var in self.stats_vars.items() if var.get()]
+
     def _build_probability_frame(self):
         """Создание фрейма для вероятностных характеристик"""
         # Подзаголовок для фрейма
@@ -128,86 +132,127 @@ class AdvancedWindow(ctk.CTkToplevel):
 
     def _build_chart_frame(self):
         """Создание фрейма с диаграммами"""
+        # Подзаголовок для фрейма
         chart_label = ctk.CTkLabel(self, text="Chart selection", font=("Arial", 12))
         chart_label.grid(row=5, column=0, padx=10, pady=(5, 0), sticky='w')
-
+        # Создание фрейма для диаграмм
         chart_frame = ctk.CTkFrame(self, corner_radius=10)
         chart_frame.grid(row=6, column=0, columnspan=2, padx=10, pady=0, sticky='ew')
         chart_frame.grid_columnconfigure(1, weight=1)
 
+        # Список доступных типов диаграмм
         self.chart_types = ["bar_vertical", "bar_horizontal", "circle", "linear", "CDF", "Boxplot", "Scatter",
                                 "Stacked", "Heatmap"]
+        # Текущий индекс выбранной диаграммы
         self.current_chart_index = 0
 
+        # Словарь для хранения состояний (выбрана или нет) каждой из диаграмм
         self.chart_selected = {chart: False for chart in self.chart_types}
 
+        # Тип основного графика из главного окна
+        self.main_chart_type = None
+
+        # Название для текущей диаграммы
         self.chart_title_label = CTkLabel(chart_frame, text="")
         self.chart_title_label.grid(row=0, column=0, columnspan=3, pady=5)
 
+        # Кнопки для переключения диаграмм
         prev_button = ctk.CTkButton(chart_frame, text="<",font=('Arial',32),width=60, height=120, command=self._prev_chart)
         prev_button.grid(row=1, column=0, padx=5, pady=5, sticky="w")
-
         next_button = ctk.CTkButton(chart_frame, text=">", font=('Arial',32), width=60, height=120, command=self._next_chart)
         next_button.grid(row=1, column=2, padx=5, pady=5, sticky="w")
 
+        # Предварительный просмотр (сейчас текст)
         self.chart_preview = ctk.CTkLabel(chart_frame, text="Chart preview", width=200, height=120)
         self.chart_preview.grid(row=1, column=1, padx=10, pady=5, sticky="w")
 
+        # Состояние чек-бокса выбора текущей диаграммы (есть у всех диаграмм)
         self.chart_selected_var = ctk.BooleanVar(value=False)
-        self.selected_checkbox = ctk.CTkCheckBox(chart_frame, text="Use this chart", variable=self.chart_selected_var)
+        self.selected_checkbox = ctk.CTkCheckBox(chart_frame, text="Use this chart", variable=self.chart_selected_var,
+                                                 command=self._save_current_chart_selection)
         self.selected_checkbox.grid(row=2, column=0, padx=10, pady=5, sticky="w")
 
         self._update_chart_view()
 
 
     def _update_chart_view(self):
-        """Обновление отображения текущей диаграммы"""
+        """Обновление интерфейса с диграммами"""
+        # Выбор текущей диаграммы
         chart_name = self.chart_types[self.current_chart_index]
-        self.chart_selected_var.set(self.chart_selected[chart_name])
+
+        # Подсчет общего количества диаграмм
         total =  len(self.chart_types)
 
+        # Отрисовка названия диаграммы и её позиции
         self.chart_title_label.configure(text=f"{chart_name} ({self.current_chart_index + 1}/{total})")
-
+        # Отрисовка предварительного просмотра (пока текст)
         self.chart_preview.configure(text=chart_name)
-
+        # Если текущая диаграмма является основной, блокируем чекбокс в состоянии True
         if chart_name == self.main_chart_type:
-            self.chart_selected_var.set(True)
+            self.chart_selected[chart_name] = True
             self.selected_checkbox.configure(state='disabled')
         else:
+            # Если диаграмма не является основной, чек-бокс не блокируется и в любом состоянии
             #self.chart_selected_var.set(False)
             self.selected_checkbox.configure(state ='normal')
 
+        # Для чекбокса выбранной диаграммы установить значение из словаря состояний
+        self.chart_selected_var.set(self.chart_selected[chart_name])
 
+
+
+    def _save_current_chart_selection(self):
+        """Сохранение текущего состояния диаграмм в словаре состояний"""
+        chart_name = self.chart_types[self.current_chart_index]
+        # Если диаграмма является основной (выбрана на главном окне)
+        if chart_name == self.main_chart_type:
+            # В словарь состояний для главной диаграммы добавляем True (выбрана всегда)
+            self.chart_selected[chart_name] = True
+        else:
+            # Для остальных диаграмм сохраняем текущее состояние чекбокса
+            self.chart_selected[chart_name] = self.chart_selected_var.get()
 
 
     def _next_chart(self):
-        """Переключение к следующему типу диаграмм"""
+        """Переключение к следующей диаграмме"""
+        # Сохранение состояния диаграмм
+        self._save_current_chart_selection()
+        # Если индекс диаграммы не максимальный, то происходит переход к следующей
         if self.current_chart_index < len(self.chart_types) - 1:
-            current_chart = self.chart_types[self.current_chart_index]
-            self.chart_selected[current_chart] = self.chart_selected_var.get()
             self.current_chart_index += 1
+            # Обновление интерфейса с диаграммой
             self._update_chart_view()
 
     def _prev_chart(self):
         """Переключение к предыдущей диаграмме"""
+        # Сохранение состояния диаграмм
+        self._save_current_chart_selection()
+        # Если индекс диаграммы больше нуля, то можно перейти к предыдущей диаграмме
         if self.current_chart_index > 0:
-            current_chart = self.chart_types[self.current_chart_index]
-            self.chart_selected[current_chart] = self.chart_selected_var.get()
             self.current_chart_index -= 1
+            # Обновление интерфейса с диаграммой
             self._update_chart_view()
 
 
     def set_main_chart(self, chart_type):
-        """ """
-        if chart_type in self.chart_types:
-            self.main_chart_type = chart_type
-            self.current_chart_index = self.chart_types.index(chart_type)
-            self._update_chart_view()
-            print(self.current_chart_index)
+        """Определение основной диаграммы"""
+        # Проверка есть ли переданный тип диаграммы в списке диаграмм
+        if chart_type not in self.chart_types:
+            return
+        # Переданная диаграмма обозначается основной
+        self.main_chart_type = chart_type
+        # Добавление главной диграммы в словарь и установка состояния True
+        self.chart_selected[chart_type] = True
+        # Получение индекса главной диаграммы
+        self.current_chart_index = self.chart_types.index(chart_type)
+        self._update_chart_view()
+        print(self.current_chart_index)
 
-    def get_selected_stats(self):
-        """Возвращает список выбранных статистических характеристик"""
-        return [name for name, var in self.stats_vars.items() if var.get()]
+    def get_selected_charts(self):
+        """Возвращает список выбранных диаграмм"""
+        self._save_current_chart_selection()
+        # В словаре состояний диграмм выбираем выбранные пользователем
+        return [chart for chart, selected in self.chart_selected.items() if selected]
 
     def on_close(self):
         """Обработчик закрытия окна"""
