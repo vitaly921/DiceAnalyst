@@ -3,6 +3,7 @@ from PIL import Image
 from advanced_window import AdvancedWindow
 
 from dice_table import DiceTable
+from charts_types import CHARTS_TYPES
 
 class MainWindow(ctk.CTk):
     """Создание главного окна"""
@@ -94,8 +95,7 @@ class MainWindow(ctk.CTk):
 
         # Тип диаграммы
         # Список типов диаграмм
-        self.chart_type_list = ["bar_vertical", "bar_horizontal", "circle", "linear", "CDF", "Boxplot", "Scatter",
-                                "Stacked", "Heatmap"]
+        self.chart_type_list = CHARTS_TYPES
         chart_type_label = ctk.CTkLabel(input_frame, text="Chart type:")
         chart_type_label.grid(row=2, column=0, padx=7, pady=10, sticky="w")
         # Тип диаграммы по умолчанию

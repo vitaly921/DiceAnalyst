@@ -1,5 +1,8 @@
 import customtkinter as ctk
+from pathlib import Path
+from PIL import Image
 from customtkinter import CTkLabel
+from charts_types import CHARTS_TYPES, CHART_PREVIEW_IMAGES
 
 
 class AdvancedWindow(ctk.CTkToplevel):
@@ -141,8 +144,7 @@ class AdvancedWindow(ctk.CTkToplevel):
         chart_frame.grid_columnconfigure(1, weight=1)
 
         # Список доступных типов диаграмм
-        self.chart_types = ["bar_vertical", "bar_horizontal", "circle", "linear", "CDF", "Boxplot", "Scatter",
-                                "Stacked", "Heatmap"]
+        self.chart_types = CHARTS_TYPES
         # Текущий индекс выбранной диаграммы
         self.current_chart_index = 0
 
@@ -179,14 +181,32 @@ class AdvancedWindow(ctk.CTkToplevel):
         """Обновление интерфейса с диграммами"""
         # Выбор текущей диаграммы
         chart_name = self.chart_types[self.current_chart_index]
+        # Получение пути к изображению выбранной диаграммы
+        image_path = CHART_PREVIEW_IMAGES.get(chart_name)
 
         # Подсчет общего количества диаграмм
         total =  len(self.chart_types)
 
         # Отрисовка названия диаграммы и её позиции
         self.chart_title_label.configure(text=f"{chart_name} ({self.current_chart_index + 1}/{total})")
-        # Отрисовка предварительного просмотра (пока текст)
-        self.chart_preview.configure(text=chart_name)
+
+        # Отрисовка предварительного просмотра изображения диаграмм
+        # Если существует путь к выбранной диаграмме и файл по данному пути
+        if image_path and Path(image_path).is_file():
+            # Получение изображения по данному пути и сохранение его копии в превью
+            with Image.open(image_path) as image:
+                preview = image.copy()
+            # Отрисовка превью и задание для него параметров
+            self.chart_preview_image = ctk.CTkImage(light_image=preview, dark_image=preview, size=(220, 120))
+            self.chart_preview.configure(image=self.chart_preview_image, text="")
+        # Если путь или файл диаграммы недоступны
+        else:
+            # Отрисовка вместо превью текста об этом
+            self.chart_preview.configure(image=None, text="Предпросмотр недоступен")
+
+        # Превью в виде заглушки - текста
+        #self.chart_preview.configure(text=chart_name)
+
         # Если текущая диаграмма является основной, блокируем чекбокс в состоянии True
         if chart_name == self.main_chart_type:
             self.chart_selected[chart_name] = True
@@ -220,8 +240,11 @@ class AdvancedWindow(ctk.CTkToplevel):
         # Если индекс диаграммы не максимальный, то происходит переход к следующей
         if self.current_chart_index < len(self.chart_types) - 1:
             self.current_chart_index += 1
-            # Обновление интерфейса с диаграммой
-            self._update_chart_view()
+        # Иначе возврат в начало списка
+        else:
+            self.current_chart_index = 0
+        # Обновление интерфейса с диаграммой
+        self._update_chart_view()
 
     def _prev_chart(self):
         """Переключение к предыдущей диаграмме"""
@@ -230,8 +253,11 @@ class AdvancedWindow(ctk.CTkToplevel):
         # Если индекс диаграммы больше нуля, то можно перейти к предыдущей диаграмме
         if self.current_chart_index > 0:
             self.current_chart_index -= 1
-            # Обновление интерфейса с диаграммой
-            self._update_chart_view()
+        # Иначе возврат в конец списка
+        else:
+            self.current_chart_index = len(self.chart_types) - 1
+        # Обновление интерфейса с диаграммой
+        self._update_chart_view()
 
 
     def set_main_chart(self, chart_type):
