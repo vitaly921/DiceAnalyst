@@ -29,6 +29,13 @@ class DiceTable(ctk.CTkFrame):
         # Очистка списка виджетов
         self.dice_widgets.clear()
 
+        # Если кол-во кубиков равно нулю
+        if count == 0:
+            # Создаём текстовую заглушку-подсказку
+            placeholder = ctk.CTkLabel(self.scroll_frame, text="Enter the number of dice (1-10)", font=("Arial", 16))
+            placeholder.grid(row=0, column=0, columnspan=self.columns, pady=20)
+            return
+
         # Создание и размещение заданного количества виджетов кубиков
         for i in range(count):
             # Создание экземпляра виджета кубика с количеством граней по умолчанию

@@ -9,8 +9,8 @@ import charts as ch
 from dice_table import DiceTable
 
 # Задание количества кубиков и бросков
-count_dices = 7
-count_rolls = 3000
+count_dices = 3
+count_rolls = 7000
 
 # Создание определенного количества кубиков
 dice = [Die() for _ in range(count_dices)]

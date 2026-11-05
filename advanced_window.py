@@ -47,6 +47,10 @@ class AdvancedWindow(ctk.CTkToplevel):
         self._build_probability_frame()     # Создание фрейма для вероятностных характеристик
         self._build_chart_frame()           # Создание фрейма с выбором диаграмм
 
+        # Создание кнопки для начала анализа
+        self.analyse_button = ctk.CTkButton(self, text="Analyze", width=100)
+        self.analyse_button.grid(row=7, column=0, columnspan=2, padx=10, pady=10)
+
 
     def _build_statistics_frame(self):
         """Создание фрейма для статистических характеристик"""
@@ -164,7 +168,7 @@ class AdvancedWindow(ctk.CTkToplevel):
         next_button = ctk.CTkButton(chart_frame, text=">", font=('Arial',32), width=60, height=120, command=self._next_chart)
         next_button.grid(row=1, column=2, padx=5, pady=5, sticky="w")
 
-        # Предварительный просмотр (сейчас текст)
+        # Предварительный просмотр
         self.chart_preview = ctk.CTkLabel(chart_frame, text="Chart preview", width=200, height=120)
         self.chart_preview.grid(row=1, column=1, padx=10, pady=5, sticky="w")
 
@@ -173,6 +177,8 @@ class AdvancedWindow(ctk.CTkToplevel):
         self.selected_checkbox = ctk.CTkCheckBox(chart_frame, text="Use this chart", variable=self.chart_selected_var,
                                                  command=self._save_current_chart_selection)
         self.selected_checkbox.grid(row=2, column=0, padx=10, pady=5, sticky="w")
+
+        # Место для индивидуальных чек-боксов для каждого графика...
 
         self._update_chart_view()
 
