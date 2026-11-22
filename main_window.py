@@ -4,6 +4,7 @@ from advanced_window import AdvancedWindow
 
 from dice_table import DiceTable
 from charts_types import CHARTS_TYPES
+from simulation import roll_dice, calc_result_range, calc_frequency, calculate_combinations
 
 class MainWindow(ctk.CTk):
     """Создание главного окна"""
@@ -66,6 +67,9 @@ class MainWindow(ctk.CTk):
         # Выводим заданное пользователем кол-во виджетов
         self.dice_table.build(count)
 
+        # Метод для проверки доступности кнопки Analyze в зависимости от кол-ва комбинаций
+        self.check_analysis_availability()
+
         # Проверка, выбирает ли пользователь для всех кубиков одинаковое кол-во граней
         if self.uniform_faces_var.get():
             # Применяем к виджетам выбранное пользователем кол-во граней
@@ -106,6 +110,8 @@ class MainWindow(ctk.CTk):
         self._build_dice_table()
         # Метод для создания кнопок перехода в расширенное окно настроек или анализа броска
         self._build_action_buttons()
+        # Метод для проверки доступности кнопки Analyze в зависимости от кол-ва комбинаций
+        self.check_analysis_availability()
 
         # При изменении в полях с кол-вом кубиков и подбрасываний обновляется состояние кнопки Analyze
         self.dice_count_var.trace_add("write", self._update_analyze_button)
@@ -149,9 +155,11 @@ class MainWindow(ctk.CTk):
         # Создание переменной со значением по умолчанию
         self.calc_mode_var = ctk.StringVar(value="sum")
         # Создание радио-кнопок
-        sum_radio = ctk.CTkRadioButton(input_frame, text="Summation", variable=self.calc_mode_var, value="sum")
+        sum_radio = ctk.CTkRadioButton(input_frame, text="Summation", variable=self.calc_mode_var, value="sum",
+                                       command=self.check_analysis_availability)
         sum_radio.grid(row=1, column=1, padx=7, pady=5, sticky="w")
-        product_radio = ctk.CTkRadioButton(input_frame, text="Composition", variable=self.calc_mode_var, value="product")
+        product_radio = ctk.CTkRadioButton(input_frame, text="Composition", variable=self.calc_mode_var, value="product",
+                                           command=self.check_analysis_availability)
         product_radio.grid(row=1, column=2, padx=7, pady=5, sticky="w")
 
         # Тип диаграммы
@@ -195,7 +203,7 @@ class MainWindow(ctk.CTk):
     def _build_dice_table(self):
         """Построение таблицы изображений кубиков"""
         # Создание объекта включающего в себя контейнер со скроллингом и с таблицей изображений кубиков
-        self.dice_table = DiceTable(self, self.dice_images)
+        self.dice_table = DiceTable(self, self.dice_images, on_sides_change=self.check_analysis_availability)
         # Задание расположения объекта-контейнера
         self.dice_table.grid(row=5, column=0, columnspan=2, pady=10, padx=10, sticky="ew")
         # Вызов обработчика для случая изменения кол-ва кубиков в строке ввода
@@ -215,6 +223,32 @@ class MainWindow(ctk.CTk):
         self.action_button = ctk.CTkButton(self, text="Analyze", width=100, command=self.on_action_button, state="disabled")
         # Задание расположения кнопки
         self.action_button.grid(row=8, column=0, columnspan=2, pady=10, padx=10)
+
+    def check_analysis_availability(self):
+        """Контроль доступности кнопки Analyze в зависимости от кол-ва комбинаций"""
+        if not hasattr(self, "action_button"):
+            return
+        # Если выбран режим суммирования, то кнопка доступна
+        if self.calc_mode_var.get() == "sum":
+            self.action_button.configure(state="normal")
+            return
+
+        # Получаем кол-во граней для каждого кубика
+        dice_sides = [dice_widget.sides_var.get() for dice_widget in self.dice_table.dice_widgets]
+        # Проверка, что все значения заполнены
+        try:
+            dice_sides = [int(sides) for sides in dice_sides]
+        except (ValueError, TypeError):
+            self.action_button.configure(state="disabled")
+            return
+        # Рассчитываем кол-во комбинаций
+        combinations = calculate_combinations(dice_sides)
+        # Проверка ограничения на кол-во комбинаций
+        if combinations <= 100000:
+            self.action_button.configure(state="normal")
+        else:
+            self.action_button.configure(state="disabled")
+
 
     def on_advanced_toggle(self):
         """Обработчик чек-бокса расширенных настроек"""
@@ -259,6 +293,8 @@ class MainWindow(ctk.CTk):
         # Изменение количества граней каждого кубика
         for dice_widget in self.dice_table.dice_widgets:
             dice_widget.sides_var.set(new_sides)
+        # Проверка кол-ва комбинаций и изменение доступности кнопки Analyze
+        self.check_analysis_availability()
 
     def _update_analyze_button(self, *args):
         """Контроль доступности кнопки Analyze"""

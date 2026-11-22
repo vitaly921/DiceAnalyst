@@ -3,12 +3,13 @@ from die_widget import DieWidget
 
 class DiceTable(ctk.CTkFrame):
     """Класс для создания прокручиваемого фрейма с виджетами кубиков"""
-    def __init__(self, parent, dice_images, columns=3, **kwargs):
+    def __init__(self, parent, dice_images, columns=3, on_sides_change=None, **kwargs):
         """Инициализация класса"""
         super().__init__(parent, fg_color= "transparent", **kwargs)
         # Сохранение переданных параметров
         self.columns = columns
         self.dice_images = dice_images
+        self.on_sides_change = on_sides_change
 
         # Создание пустого списка для хранения виджетов кубиков
         self.dice_widgets = []
@@ -39,7 +40,7 @@ class DiceTable(ctk.CTkFrame):
         # Создание и размещение заданного количества виджетов кубиков
         for i in range(count):
             # Создание экземпляра виджета кубика с количеством граней по умолчанию
-            die = DieWidget(self.scroll_frame, self.dice_images)
+            die = DieWidget(self.scroll_frame, self.dice_images, on_sides_change=self.on_sides_change)
 
             # Задание расположения виджета с учетом допустимого количества кубиков в ряду
             row = i // self.columns     # Задание номера ряда

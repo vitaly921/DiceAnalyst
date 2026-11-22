@@ -2,7 +2,7 @@ import customtkinter as ctk
 
 class DieWidget(ctk.CTkFrame):
     """Класс виджета для отображения кубика"""
-    def __init__(self, parent, dice_images, sides="6"):
+    def __init__(self, parent, dice_images, sides="6", on_sides_change=None):
         # Инициализация базового класса CTkFrame
         # Установка радиуса углов и размеров виджета
         super().__init__(parent, corner_radius=10, width=140, height=170)
@@ -10,6 +10,8 @@ class DieWidget(ctk.CTkFrame):
         self.grid_propagate(False)
         # Сохранение изображений кубиков
         self.dice_images = dice_images
+        # Сохранение функции обратного вызова при изменении количества граней
+        self.on_sides_change = on_sides_change
         # Сохранение переданного значения количества граней
         self.sides_var = ctk.StringVar(value=sides)
         # Добавление изображения кубика в виджет с заданным количеством граней
@@ -17,7 +19,7 @@ class DieWidget(ctk.CTkFrame):
         self.image_label.pack(pady=(8,4))
         # Добавление выпадающего списка для изменения количества граней
         self.sides_box = ctk.CTkComboBox(self, values=[str(i) for i in range(2, 13)], variable=self.sides_var,
-                                         width=70, state="disabled", command=self._on_sides_change)
+                                         width=70, state="disabled")
         self.sides_box.pack(pady=(0,8))
 
         # Вызов обработчика при изменении количества граней чек-бокса Uniform Sides
@@ -31,6 +33,8 @@ class DieWidget(ctk.CTkFrame):
         img = self.dice_images.get(value, self.dice_images["6"])
         # Обновление изображения кубика с новым количеством граней
         self.image_label.configure(image=img)
+        if self.on_sides_change is not None:
+            self.on_sides_change()
 
     def get_sides(self):
         """Получение текущего количества граней"""
