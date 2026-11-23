@@ -50,15 +50,15 @@ def calc_result_range(dice, mode="sum"):
     return min_result, max_result
 
 
-def calculate_combinations(dice_sides):
-    """Подсчет возможных комбинаций кубиков"""
-    combinations = 1
+def calculate_possible_outcomes(dice_sides):
+    """Подсчет максимального количества возможных исходов"""
+    possible_outcomes = 1
     # Перебор каждого кубика в списке
     for dice_side in dice_sides:
-        # Умножение текущего количества комбинаций на количество сторон кубика
-        combinations *= dice_side
-    # Возвращение общего количества комбинаций
-    return combinations
+        # Умножение текущего количества исходов на количество сторон кубика
+        possible_outcomes *= dice_side
+    # Возвращение максимального количества возможных исходов
+    return possible_outcomes
 
 
 def calc_frequency(results, min_result, max_result):

@@ -4,7 +4,9 @@ from advanced_window import AdvancedWindow
 
 from dice_table import DiceTable
 from charts_types import CHARTS_TYPES
-from simulation import roll_dice, calc_result_range, calc_frequency, calculate_combinations
+from simulation import roll_dice, calc_result_range, calc_frequency, calculate_possible_outcomes
+
+MAX_OUTCOMES = 100_000
 
 class MainWindow(ctk.CTk):
     """Создание главного окна"""
@@ -217,23 +219,28 @@ class MainWindow(ctk.CTk):
         self.advanced_check = ctk.CTkCheckBox(self, text="Advanced settings", variable=self.advanced_var,
                                          command=self.on_advanced_toggle)
         # Задание расположения чек-бокса
-        self.advanced_check.grid(row=7, column=0, pady=5, padx=18, sticky="w")
+        self.advanced_check.grid(row=7, column=0, padx=18, sticky="w")
+
+        # Надпись для отображения текущего и максимального кол-ва исходов в режиме произведения
+        self.outcomes_label = ctk.CTkLabel(self, text="", font=("Arial", 11))
+        self.outcomes_label.grid(row=8, column=0, columnspan=2)
 
         # Кнопка для начала анализа/расширенных настроек (в зависимости от чек-бокса)
         self.action_button = ctk.CTkButton(self, text="Analyze", width=100, command=self.on_action_button, state="disabled")
         # Задание расположения кнопки
-        self.action_button.grid(row=8, column=0, columnspan=2, pady=10, padx=10)
+        self.action_button.grid(row=9, column=0, columnspan=2, padx=10)
 
     def check_analysis_availability(self):
-        """Контроль доступности кнопки Analyze в зависимости от кол-ва комбинаций"""
+        """Контроль доступности кнопки Analyze в зависимости от кол-ва возможных исходов"""
         if not hasattr(self, "action_button"):
             return
-        # Если выбран режим суммирования, то кнопка доступна
+        # Если выбран режим суммирования, то кнопка всегда доступна, а информационная надпись скрыта
         if self.calc_mode_var.get() == "sum":
             self.action_button.configure(state="normal")
+            self.outcomes_label.grid_remove()
             return
-
-        # Получаем кол-во граней для каждого кубика
+        # Для режима произведения проверяем доступность кнопки
+        # Список значений граней для каждого кубика
         dice_sides = [dice_widget.sides_var.get() for dice_widget in self.dice_table.dice_widgets]
         # Проверка, что все значения заполнены
         try:
@@ -241,11 +248,17 @@ class MainWindow(ctk.CTk):
         except (ValueError, TypeError):
             self.action_button.configure(state="disabled")
             return
-        # Рассчитываем кол-во комбинаций
-        combinations = calculate_combinations(dice_sides)
-        # Проверка ограничения на кол-во комбинаций
-        if combinations <= 100000:
+
+        # Рассчитываем возможное кол-во исходов для заданных граней
+        possible_outcomes = calculate_possible_outcomes(dice_sides)
+        # Выводим информацию о кол-ве возможных исходов на главном окне
+        self.outcomes_label.configure(text=f"Possible outcomes: {possible_outcomes} / 100k")
+        self.outcomes_label.grid()
+        # Проверка ограничения на макс. кол-во возможных исходов
+        if possible_outcomes <= MAX_OUTCOMES:
+            # Если кол-во меньше 100000, то кнопка доступна
             self.action_button.configure(state="normal")
+            # иначе недоступна
         else:
             self.action_button.configure(state="disabled")
 
